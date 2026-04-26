@@ -1,0 +1,20 @@
+Roadmap context:
+- AI.md should be updated for any changes relevant to how I expect the AI to work with me.
+- README.md should be updated for any changes relevant to this document.
+- At the end of every version completed add the date when the item was completed.
+- Increase the version number after each iteration of roadmap items within here by 1.0.1 to 1.0.2 as an example.
+- Keep only the last version completed and on top of it the new space for the new version notes, remove all the others.
+- On every version bump update all files that contain the version number:
+    * src/screens/SettingsScreen.tsx - version label in the About section
+    * android/app/build.gradle - versionCode and versionName
+    * package.json - version field
+- Move the completed items to a new text document called versionlog.
+- Commit and push the changes to the github with the proper comments.
+
+STATUS KEY: [x] done - [ ] pending
+
+1.1.64
+-
+
+1.1.63 | completed 2026-04-21
+[x] 1. Added calculator-open scroll padding and nudging so capture fields stay visible above the calculator keypad.
