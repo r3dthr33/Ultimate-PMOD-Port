@@ -1,7 +1,13 @@
 local gc = Var("GameCommand");
 local t = Def.ActorFrame{}
 local centered = 52
-local item = tonumber(gc:GetName());
+local choice_map = {
+	GameStart = 1,
+	Edit = 2,
+	Options = 3,
+	Network = 4,
+};
+local item = tonumber(gc:GetName()) or choice_map[gc:GetName()];
 
 
 t[#t+1] = Def.BitmapText{

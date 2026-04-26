@@ -126,6 +126,28 @@ local function AdjustBanner(self)
 	end
 end;
 
+local function WheelItemForIndex(i)
+	local item;
+
+	if i == minIndex then
+		item = offset-math.floor(maxitems/2)
+	elseif i == maxIndex then
+		item = offset+math.floor(maxitems/2)
+	else
+		item = offset-math.ceil(maxitems/2)+i
+	end
+
+	while item > #Global.songlist do
+		item = item%#Global.songlist
+	end
+
+	while item < 1 do
+		item = #Global.songlist-math.abs(item)
+	end
+
+	return item;
+end;
+
 --//================================================================
 
 local t = Def.ActorFrame{
@@ -252,49 +274,56 @@ for i=1,maxitems do
 			--//  REFLECTION
 			--//==========
 
-			Def.ActorFrameTexture{
-			    --Name = "BannerReflection"..i;
-			    InitCommand=function(self)
-			        self:SetTextureName("BannerReflection"..i);
-			        self:x(62);
-			        self:SetWidth(124);
-			        self:SetHeight(80);
-			        self:EnableFloat(false);
-			        self:EnableAlphaBuffer(true);
-			        self:EnableDepthBuffer(true);
-			        self:Create();
-			    end;
+			Def.ActorFrame{
+				Name = "Reflection"..i;
+				InitCommand=function(self)
+					self:y(8);
+					self:zoomy(-1);
+				end;
+				TweenMessageCommand=function(self,param)
+					
+					self:stoptweening();
+					AdjustBanner(self);
 
-			    OnCommand=cmd(y,999);
+					if i ~= minIndex and i ~= maxIndex then
+						self:decelerate(tweenSpeed);
+					end;
 
-					Def.ActorProxy{
-						Name = "BannerProxy"..i;
-						InitCommand=cmd(x,62;y,7);
-						OnCommand=cmd(SetTarget,self:GetParent():GetParent():GetChild("Banner"..i);zoomy,-1);
-					};
+					if Global.state ~= "MusicWheel" then 
+						self:diffuse(0.5,0.5,0.5,1); 
+					else 
+						self:diffuse(1,1,1,1);
+					end; 
 
-					Def.ActorProxy{
-						Name = "FrameProxy"..i;
-						InitCommand=cmd(x,62;y,7);
-						OnCommand=cmd(SetTarget,self:GetParent():GetParent():GetChild("Frame"..i);zoomy,-1);
-					};
+				end;
 
+				Def.Banner{
+					Name = "BannerReflection"..i;
+					InitCommand=cmd(y,-34;);
+					OnCommand=cmd(playcommand,"Reload");
+					ReloadMessageCommand=function(self,param)
+						local item = WheelItemForIndex(i);
+						local should_reload = i == minIndex or i == maxIndex;
+						if param then
+							should_reload = should_reload or param.Reload;
+						end;
+
+						if Global.songlist[item] and should_reload then
+							LoadBanner(self,item);
+							AdjustBanner(self);
+						end;
+
+						self:croptop(0.5);
+						self:fadetop(1);
+						self:blend("BlendMode_Add");
+					end;
+				};
+
+				LoadActor(THEME:GetPathG("","WheelItemFrame"))..{
+					Name = "FrameReflection"..i;
+					InitCommand=cmd(zoomto,124,80;vertalign,bottom;y,7;croptop,0.5;fadetop,1;blend,Blend.Add;);
+				};
 			};
-
-		    Def.Sprite{
-		        Name = "ReflectionSprite"..i;
-		        Texture = "BannerReflection"..i;
-		        InitCommand=function(self)
-		        	self:diffuse(0.75,0.75,0.75,0.75);
-		        	self:zoomto(124,80);
-		        	self:y(-1);
-		        	self:vertalign(top);
-		        	self:fadebottom(1);
-		        	self:cropbottom(0.5);
-		        	self:zoomy(0.925);
-		        	self:blend("BlendMode_Add");
-		        end;
-		    };
 
 
 			--//========== 
