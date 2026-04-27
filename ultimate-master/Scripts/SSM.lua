@@ -330,7 +330,69 @@ end;
 function GetNoteskins()
     local g = GAMESTATE:GetCurrentGame();
     local st = GAMEMAN:GetFirstStepsTypeForGame(g);
-    return NOTESKIN:get_skin_names_for_stepstype(st);
+    if type(NOTESKIN.get_skin_names_for_stepstype) == "function" then
+        return NOTESKIN:get_skin_names_for_stepstype(st);
+    end;
+
+    if type(NOTESKIN.GetNoteSkinNames) == "function" then
+        local noteskins = NOTESKIN:GetNoteSkinNames() or {};
+        local filtered = {};
+        for i = 1, #noteskins do
+            local skin = noteskins[i];
+            if not NOTESKIN.DoesNoteSkinExist or NOTESKIN:DoesNoteSkinExist(skin) then
+                filtered[#filtered+1] = skin;
+            end;
+        end;
+        return filtered;
+    end;
+
+    return { NOTESKIN:GetDefaultGameNoteSkin() };
+end;
+
+--//================================================================
+
+local function GetProfileNoteskin(profile, stepstype)
+    if not profile then return NOTESKIN:GetDefaultGameNoteSkin() end;
+
+    if type(profile.get_preferred_noteskin) == "function" then
+        return profile:get_preferred_noteskin(stepstype);
+    end;
+
+    if type(profile.GetNoteSkin) == "function" then
+        return profile:GetNoteSkin();
+    end;
+
+    return NOTESKIN:GetDefaultGameNoteSkin();
+end;
+
+local function SetProfileNoteskin(profile, stepstype, skin)
+    if not profile or not skin then return end;
+
+    if type(profile.set_preferred_noteskin) == "function" then
+        profile:set_preferred_noteskin(skin);
+        return;
+    end;
+
+    if type(profile.SetNoteSkin) == "function" then
+        profile:SetNoteSkin(skin);
+    end;
+end;
+
+--//================================================================
+
+local function ApplyPreferredNoteskinCompat(pn, skin)
+    if not pn or not skin then return end;
+
+    local pstate = GAMESTATE:GetPlayerState(pn);
+    if not pstate then return end;
+
+    local poptions = type(pstate.GetPlayerOptions) == "function" and
+        pstate:GetPlayerOptions("ModsLevel_Preferred") or nil;
+
+    if poptions and type(poptions.NoteSkin) == "function" then
+        poptions:NoteSkin(skin);
+        pstate:ApplyPreferredOptionsToOtherLevels();
+    end;
 end;
 
 --//================================================================
@@ -340,7 +402,8 @@ function SetNoteskinByIndex(pn, num)
     local st = GAMEMAN:GetFirstStepsTypeForGame(g);
     local noteskins = GetNoteskins();
     local index = clamp(num,1,#noteskins)
-    PROFILEMAN:GetProfile(pn):set_preferred_noteskin(noteskins[index])
+    SetProfileNoteskin(PROFILEMAN:GetProfile(pn), st, noteskins[index]);
+    ApplyPreferredNoteskinCompat(pn, noteskins[index]);
     return noteskins[index];
 end;
 
@@ -355,7 +418,8 @@ function SetNoteskin(pn, ns)
     else
         st = GAMEMAN:GetFirstStepsTypeForGame(g)
     end;
-    PROFILEMAN:GetProfile(pn):set_preferred_noteskin(ns)
+    SetProfileNoteskin(PROFILEMAN:GetProfile(pn), st, ns);
+    ApplyPreferredNoteskinCompat(pn, ns);
 end;
 
 --//================================================================
@@ -385,6 +449,5 @@ function GetPreferredNoteskin(pn)
     else
         st = GAMEMAN:GetFirstStepsTypeForGame(g)
     end;
-    return PROFILEMAN:GetProfile(pn):get_preferred_noteskin(st)
+    return GetProfileNoteskin(PROFILEMAN:GetProfile(pn), st)
 end;
-

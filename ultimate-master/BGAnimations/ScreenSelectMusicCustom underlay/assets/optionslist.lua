@@ -22,6 +22,25 @@ local selection_stack = {
 
 ResetPlayerDisplay(pn);
 
+local function SaveOptionListState(pn)
+    SavePlayerOptionsFromThemeConfig(pn);
+end;
+
+local function PrepareSpeedOption(option, pn)
+    local nconf = NOTESCONFIG:get_data(pn);
+    local mode = NormalizeSpeedTypeForPMOD(nconf.speed_type);
+    nconf.speed_type = mode;
+
+    if option and option.Field == "speed_mod" then
+        local range = GetPMODSpeedRange(pn, mode);
+        option.Range.Min = range.Min;
+        option.Range.Max = range.Max;
+        option.Range.Step = range.Step;
+    elseif option and option.Field == "speed_type" then
+        option.Choices = { "multiple", "maximum" };
+    end;
+end;
+
 local function NoteskinMenu(pn)
     local noteskins = GetNoteskins();
     local noteskin_stack = {};
@@ -40,9 +59,9 @@ local option_tree = {
     {
         Name = "Speed",
         Options = {
-            ConfigRange(NOTESCONFIG, "speed_mod", 250, 1, 9999, 25),
+            ConfigRange(NOTESCONFIG, "speed_mod", 200, 100, 600, 25),
             ConfigChoices(PLAYERCONFIG, "SpeedModifier", 25, { 1, 10, 25, 50, 100 }),
-            ConfigChoices(NOTESCONFIG, "speed_type", "maximum", notefield_speed_types),
+            ConfigChoices(NOTESCONFIG, "speed_type", "multiple", { "multiple", "maximum" }),
             ConfigAction("Reset", function(pn) ResetPlayerSpeed(pn) end),
             ConfigExit("Back"),
         },
@@ -138,8 +157,9 @@ function OptionsListController(self,param)
 
     if param.Input == "Prev" then
         if currentoption[pn] then
-            if currentoption[pn].Field == "speed_mod" then currentoption[pn].Range.Step = PLAYERCONFIG:get_data(pn).SpeedModifier; end;
+            PrepareSpeedOption(currentoption[pn], pn);
             MESSAGEMAN:Broadcast("ChangeProperty", { Player = pn, Input = param.Input, Option = currentoption[pn] });
+            SaveOptionListState(pn);
             MESSAGEMAN:Broadcast("OptionsListChanged", { Player = pn, Direction = "Prev", silent = true });
             return;
         else
@@ -159,8 +179,9 @@ function OptionsListController(self,param)
     
     if param.Input == "Next" then
         if currentoption[pn] then
-            if currentoption[pn].Field == "speed_mod" then currentoption[pn].Range.Step = PLAYERCONFIG:get_data(pn).SpeedModifier; end;
+            PrepareSpeedOption(currentoption[pn], pn);
             MESSAGEMAN:Broadcast("ChangeProperty", { Player = pn, Input = param.Input, Option = currentoption[pn] });
+            SaveOptionListState(pn);
             MESSAGEMAN:Broadcast("OptionsListChanged", { Player = pn, Direction = "Next", silent = true });
             return;
         else
@@ -228,18 +249,21 @@ function SelectOptionsList(param)
 
             if topstack.Action then
                 topstack.Action(pn);
+                SaveOptionListState(pn);
                 MESSAGEMAN:Broadcast("OptionsListSelected", { Player = pn });
                 MESSAGEMAN:Broadcast("OptionsListChanged", { Player = pn, silent = true });
                 return;
 
             elseif topstack.Type == "bool" then
                 MESSAGEMAN:Broadcast("ChangeProperty", { Player = pn, Input = "Next", Option = topstack, silent = true });
+                SaveOptionListState(pn);
                 MESSAGEMAN:Broadcast("OptionsListSelected", { Player = pn });
                 MESSAGEMAN:Broadcast("OptionsListChanged", { Player = pn, silent = true });
                 return;
 
             elseif topstack.Type == "noteskin" then
                 local n = SetNoteskinByIndex(pn, selection[pn]);
+                SaveOptionListState(pn);
                 selection[pn] = selection_stack[pn][#selection_stack[pn]];
                 table.remove(selection_stack[pn], #selection_stack[pn]);
                 table.remove(option_stack[pn], #option_stack[pn]);
@@ -250,6 +274,7 @@ function SelectOptionsList(param)
 
             else
                 currentoption[pn] = topstack;
+                PrepareSpeedOption(currentoption[pn], pn);
                 MESSAGEMAN:Broadcast("OptionsListSelected", { Player = pn });
                 MESSAGEMAN:Broadcast("OptionsListChanged", { Player = pn, silent = true });
                 return;

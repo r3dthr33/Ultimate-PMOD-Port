@@ -102,6 +102,34 @@ end;
 
 --//================================================================
 
+local function GetWheelBannerItem(i, param)
+	local item;
+	local should_reload = false;
+
+	if i == minIndex then
+		item = offset-math.floor(maxitems/2);
+		should_reload = true;
+	elseif i == maxIndex then
+		item = offset+math.floor(maxitems/2);
+		should_reload = true;
+	else
+		item = offset-math.ceil(maxitems/2)+i;
+		should_reload = param and param.Reload or false;
+	end;
+
+	while item > #Global.songlist do
+		item = item % #Global.songlist;
+	end;
+
+	while item < 1 do
+		item = #Global.songlist-math.abs(item);
+	end;
+
+	return item, should_reload;
+end;
+
+--//================================================================
+
 local function AdjustBanner(self)
 	self:cropleft(0);
 	self:cropright(0);
@@ -124,6 +152,16 @@ local function AdjustBanner(self)
 		self:cropright(adjust);
 		self:setsize(ratio*70,70);
 	end
+end;
+
+--//================================================================
+
+local function AdjustReflection(self)
+	AdjustBanner(self);
+	self:zoomy(-1);
+	self:croptop(0.5);
+	self:fadetop(1);
+	self:blend(Blend.Add);
 end;
 
 --//================================================================
@@ -252,49 +290,53 @@ for i=1,maxitems do
 			--//  REFLECTION
 			--//==========
 
-			Def.ActorFrameTexture{
-			    --Name = "BannerReflection"..i;
-			    InitCommand=function(self)
-			        self:SetTextureName("BannerReflection"..i);
-			        self:x(62);
-			        self:SetWidth(124);
-			        self:SetHeight(80);
-			        self:EnableFloat(false);
-			        self:EnableAlphaBuffer(true);
-			        self:EnableDepthBuffer(true);
-			        self:Create();
-			    end;
+			Def.Banner{
+				Name = "ReflectionBanner"..i;
+				InitCommand=cmd(y,44);
+				TweenMessageCommand=function(self,param)
+					self:stoptweening();
+					AdjustReflection(self);
 
-			    OnCommand=cmd(y,999);
+					if i ~= minIndex and i ~= maxIndex then
+						self:decelerate(tweenSpeed);
+					end;
 
-					Def.ActorProxy{
-						Name = "BannerProxy"..i;
-						InitCommand=cmd(x,62;y,7);
-						OnCommand=cmd(SetTarget,self:GetParent():GetParent():GetChild("Banner"..i);zoomy,-1);
-					};
+					if Global.state ~= "MusicWheel" then
+						self:diffuse(0.45,0.45,0.45,1);
+					else
+						self:diffuse(0.8,0.8,0.8,1);
+					end;
+				end;
+				ReloadMessageCommand=function(self,param)
+					local item, should_reload = GetWheelBannerItem(i, param);
+					if Global.songlist[item] and should_reload then
+						LoadBanner(self,item);
+						AdjustReflection(self);
+					end;
+				end;
+			},
 
-					Def.ActorProxy{
-						Name = "FrameProxy"..i;
-						InitCommand=cmd(x,62;y,7);
-						OnCommand=cmd(SetTarget,self:GetParent():GetParent():GetChild("Frame"..i);zoomy,-1);
-					};
+			LoadActor(THEME:GetPathG("","WheelItemFrame"))..{
+				Name = "ReflectionFrame"..i;
+				InitCommand=cmd(zoomto,124,80;y,44;cropbottom,0.5;fadebottom,1;);
+				BuildMusicListMessageCommand=cmd(playcommand,"Tween");
+				StateChangedMessageCommand=cmd(playcommand,"Tween");
+				TweenMessageCommand=function(self,param)
+		
+					self:stoptweening();		
 
+					if i ~= minIndex and i ~= maxIndex then
+						self:decelerate(tweenSpeed);
+					end
+
+					if Global.state~="MusicWheel" then 
+						self:diffuse(0.5,0.5,0.5,1); 
+					else 
+						self:diffuse(1,1,1,1);
+					end; 
+
+				end;
 			};
-
-		    Def.Sprite{
-		        Name = "ReflectionSprite"..i;
-		        Texture = "BannerReflection"..i;
-		        InitCommand=function(self)
-		        	self:diffuse(0.75,0.75,0.75,0.75);
-		        	self:zoomto(124,80);
-		        	self:y(-1);
-		        	self:vertalign(top);
-		        	self:fadebottom(1);
-		        	self:cropbottom(0.5);
-		        	self:zoomy(0.925);
-		        	self:blend("BlendMode_Add");
-		        end;
-		    };
 
 
 			--//========== 
@@ -322,31 +364,8 @@ for i=1,maxitems do
 				end;
 
 				ReloadMessageCommand=function(self,param)
-					local item;
-
-					if i == minIndex then
-						item = offset-math.floor(maxitems/2)
-						reload = true;
-					elseif i == maxIndex then
-						item = offset+math.floor(maxitems/2)
-						reload = true;
-					else
-						item = offset-math.ceil(maxitems/2)+i
-						reload = false;
-						if param then 
-							reload = param.Reload; 
-						end;
-					end
-
-					while item > #Global.songlist do
-						item = item%#Global.songlist
-					end
-
-					while item < 1 do
-						item = #Global.songlist-math.abs(item)
-					end
-
-					if Global.songlist[item] and reload then
+					local item, should_reload = GetWheelBannerItem(i, param);
+					if Global.songlist[item] and should_reload then
 						LoadBanner(self,item);
 						AdjustBanner(self);
 					end;

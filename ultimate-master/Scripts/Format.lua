@@ -115,12 +115,10 @@ end
 --//================================================================
 
 function FormatSpeed(value, stype)
-    local mode = stype and string.lower(stype) or ""
-    if mode == 3 or mode == "m" or mode == "maximum" then
-        return "M"..value;
-    elseif mode == 2 or mode == "c" or mode == "constant" then
-        return "C"..value;
-    elseif mode == 1 or mode == "x" or mode == "multiple" then
+    local mode = NormalizeSpeedTypeForPMOD(stype and string.lower(stype) or "");
+    if mode == "maximum" then
+        return "AV"..value;
+    elseif mode == "multiple" then
         return string.format("%.2f",value/100).."X";
     else
         LuaError("Invalid or nil speed mode");
@@ -194,9 +192,9 @@ end;
 --//================================================================
 
 function FormatSpeedType(t)
-    if t == "maximum" then return "Automatic";
-    elseif t == "constant" then return "Constant"
-    elseif t == "multiple" then return "Multiple"
+    local mode = NormalizeSpeedTypeForPMOD(t);
+    if mode == "maximum" then return "AV";
+    elseif mode == "multiple" then return "XMod";
     else return "" end;
 end;
 

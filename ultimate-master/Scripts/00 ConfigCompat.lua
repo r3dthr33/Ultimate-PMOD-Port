@@ -172,8 +172,8 @@ end;
 
 local notefield_default_prefs = {
 	speed_step = 10,
-	speed_mod = 250,
-	speed_type = "maximum",
+	speed_mod = 200,
+	speed_type = "multiple",
 	hidden = false,
 	hidden_offset = 120,
 	sudden = false,
