@@ -42,157 +42,79 @@ local tex = Def.ActorFrameTexture{
     end;
 }
 
-local function FindFileWithPattern(directory, pattern)
-    local files = FILEMAN:GetDirListing(directory, false, false) or {};
-    local needle = string.lower(pattern);
+-- <Kyzentun> Luizsan: Yeah, it's touchy about the order.  I tried to make it less 
+-- touchy in the notefield_targets branch, but good luck finding someone to build that.
+for pn in ivalues(GAMESTATE:GetHumanPlayers()) do
 
-    for _, file in ipairs(files) do
-        if string.find(string.lower(file), needle, 1, true) then
-            return directory .. file;
-        end;
-    end;
+    tex[#tex+1] = Def.NoteField{
 
-    return nil;
-end;
-
-local function FindNoteskinFile(skin, pattern)
-    local skins = { skin, skin and string.upper(skin) or nil, "PHOENIX", "default" };
-
-    for _, name in ipairs(skins) do
-        if name and name ~= "" then
-            local found = FindFileWithPattern("NoteSkins/pump/" .. name .. "/", pattern);
-            if found then return found; end;
-        end;
-    end;
-
-    return THEME:GetPathG("", "_blank");
-end;
-
-local function LoadNoteskinSprite(self, pn, pattern)
-    local skin = GetPreferredNoteskin(pn);
-    self:Load(FindNoteskinFile(skin, pattern));
-end;
-
-local columns = {
-    { x = -128, receptor = "DownLeft Ready Receptor", note = "DownLeft Tap Note", rotationy = 0 },
-    { x = -64, receptor = "UpLeft Ready Receptor", note = "UpLeft Tap Note", rotationy = 0 },
-    { x = 0, receptor = "Center Ready Receptor", note = "Center Tap Note", rotationy = 0 },
-    { x = 64, receptor = "UpLeft Ready Receptor", note = "UpLeft Tap Note", rotationy = 180 },
-    { x = 128, receptor = "DownLeft Ready Receptor", note = "DownLeft Tap Note", rotationy = 180 },
-};
-
-local preview_chart = {
-    {1,0,0,0,0},
-    {0,0,0,0,1},
-    {0,0,1,0,0},
-    {0,0,0,1,0},
-    {0,1,0,0,0},
-    {0,0,1,0,0},
-    {1,0,0,0,0},
-    {0,0,0,0,1},
-};
-
-local function PositionPreview(self, pn)
-    local steps = Global.pncursteps[pn];
-    local st = steps and PureType(steps) or "";
-    local base_x = _screen.cx;
-
-    if GAMESTATE:GetNumSidesJoined() > 1 and st ~= "Double" and st ~= "Routine" then
-        base_x = _screen.cx + 180 * pnSide(pn);
-    end;
-
-    self:xy(base_x, _screen.cy);
-end;
-
-local function BuildPreviewNoteField(pn)
-    local af = Def.ActorFrame{
-        InitCommand=function(self)
-            self:visible(false);
-            self:playcommand("Refresh");
-        end;
         StepsChangedMessageCommand=cmd(playcommand,"Refresh");
         SpeedChangedMessageCommand=cmd(playcommand,"Refresh");
         FolderChangedMessageCommand=cmd(playcommand,"Refresh");
         PropertyChangedMessageCommand=cmd(playcommand,"Refresh");
         OptionsListChangedMessageCommand=cmd(playcommand,"Refresh");
-        StateChangedMessageCommand=cmd(playcommand,"Refresh");
-        OptionsListOpenedMessageCommand=cmd(playcommand,"Refresh");
-        OptionsListClosedMessageCommand=cmd(playcommand,"Refresh");
         NoteskinChangedMessageCommand=function(self,param)
-            if param and param.Player == pn then
-                self:playcommand("Refresh");
+            if param and param.noteskin and param.Player == pn then
+                self:set_skin(param.noteskin, {});
             end;
         end;
+
         RefreshCommand=function(self)
-            local show = GAMESTATE:IsSideJoined(pn) and Global.pncursteps[pn];
+            if GAMESTATE:IsSideJoined(pn) and Global.pncursteps[pn] then
+                if Global.state ~= "SelectSteps" then
+                    self:visible(Global.oplist[pn]);
+                else
+                    self:visible(true);
+                end;
 
-            if show and Global.state ~= "SelectSteps" then
-                show = Global.oplist[pn];
+                local steps = Global.pncursteps[pn];
+                local skin = GetPreferredNoteskin(pn);
+                local prefs = notefield_prefs_config:get_data(pn);
+
+                self:set_vanish_type("FieldVanishType_RelativeToSelf")
+
+                if curskin[pn] ~= skin then
+                    self:set_skin(skin, {});
+                    curskin[pn] = skin;
+                end;
+
+                self:set_steps(steps);
+
+                local speed = prefs.speed_mod;
+                local mode = prefs.speed_type;
+                local bpm = Global.song:GetDisplayBpms()[2];
+                apply_notefield_prefs_nopn(bpm, self, prefs)
+                self:playcommand("WidthSet");
+                self:set_curr_second(curTime);  
             end;
+        end;
 
-            self:visible(show and true or false);
+        WidthSetCommand=function(self,param)
+            if GAMESTATE:IsSideJoined(pn) and Global.pncursteps[pn] then
+                local steps = Global.pncursteps[pn];
+                local st = PureType(steps);
 
-            if show then
-                PositionPreview(self, pn);
+                if (st == "Double" or st == "Routine") or GAMESTATE:GetNumSidesJoined() == 1 then
+                    self:set_base_values{
+                        transform_pos_x = _screen.cx, 
+                        transform_pos_y = _screen.cy,
+                    }
+                else
+                    self:set_base_values{
+                        transform_pos_x = _screen.cx + (self:get_width() + 32) * 0.5 * pnSide(pn), 
+                        transform_pos_y = _screen.cy,
+                    }
+                end;
+            end;
+        end;
+
+        UpdateNotefieldMessageCommand=function(self)
+            if GAMESTATE:IsSideJoined(pn) and Global.pncursteps[pn] then
+                self:set_curr_second(curTime);
             end;
         end;
     };
 
-    for i, col in ipairs(columns) do
-        af[#af+1] = Def.Sprite{
-            InitCommand=function(self)
-                self:zoom(0.9);
-                self:xy(col.x, -160);
-                self:rotationy(col.rotationy);
-                self:pause();
-            end;
-            OnCommand=function(self) self:playcommand("Refresh"); end;
-            RefreshCommand=function(self) LoadNoteskinSprite(self, pn, col.receptor); end;
-            NoteskinChangedMessageCommand=function(self,param)
-                if param and param.Player == pn then self:playcommand("Refresh"); end;
-            end;
-        };
-    end;
-
-    for row, data in ipairs(preview_chart) do
-        for col_index, value in ipairs(data) do
-            if value == 1 then
-                local col = columns[col_index];
-                af[#af+1] = Def.Sprite{
-                    InitCommand=function(self)
-                        self:zoom(0.9);
-                        self:rotationy(col.rotationy);
-                        self:pause();
-                    end;
-                    OnCommand=function(self)
-                        self:playcommand("Refresh");
-                        self:playcommand("UpdateNotefield");
-                    end;
-                    RefreshCommand=function(self) LoadNoteskinSprite(self, pn, col.note); end;
-                    NoteskinChangedMessageCommand=function(self,param)
-                        if param and param.Player == pn then self:playcommand("Refresh"); end;
-                    end;
-                    UpdateNotefieldMessageCommand=function(self)
-                        local cycle = 384;
-                        local scroll = (curTime * 140) % cycle;
-                        local y = 190 - ((row - 1) * 48 + scroll);
-
-                        if y < -120 then
-                            y = y + cycle;
-                        end;
-
-                        self:xy(col.x, y - 160);
-                    end;
-                };
-            end;
-        end;
-    end;
-
-    return af;
-end;
-
-for pn in ivalues(GAMESTATE:GetHumanPlayers()) do
-    tex[#tex+1] = BuildPreviewNoteField(pn);
 end;
 
 t[#t+1] = tex;

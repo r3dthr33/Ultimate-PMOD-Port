@@ -330,12 +330,7 @@ end;
 function GetNoteskins()
     local g = GAMESTATE:GetCurrentGame();
     local st = GAMEMAN:GetFirstStepsTypeForGame(g);
-    if NOTESKIN.get_skin_names_for_stepstype then
-        return NOTESKIN:get_skin_names_for_stepstype(st);
-    elseif NOTESKIN.GetNoteSkinNames then
-        return NOTESKIN:GetNoteSkinNames();
-    end;
-    return {};
+    return NOTESKIN:get_skin_names_for_stepstype(st);
 end;
 
 --//================================================================
@@ -345,12 +340,7 @@ function SetNoteskinByIndex(pn, num)
     local st = GAMEMAN:GetFirstStepsTypeForGame(g);
     local noteskins = GetNoteskins();
     local index = clamp(num,1,#noteskins)
-    local profile = PROFILEMAN:GetProfile(pn);
-    if profile.set_preferred_noteskin then
-        profile:set_preferred_noteskin(noteskins[index])
-    elseif profile.SetNoteSkin then
-        profile:SetNoteSkin(noteskins[index])
-    end;
+    PROFILEMAN:GetProfile(pn):set_preferred_noteskin(noteskins[index])
     return noteskins[index];
 end;
 
@@ -365,12 +355,7 @@ function SetNoteskin(pn, ns)
     else
         st = GAMEMAN:GetFirstStepsTypeForGame(g)
     end;
-    local profile = PROFILEMAN:GetProfile(pn);
-    if profile.set_preferred_noteskin then
-        profile:set_preferred_noteskin(ns)
-    elseif profile.SetNoteSkin then
-        profile:SetNoteSkin(ns)
-    end;
+    PROFILEMAN:GetProfile(pn):set_preferred_noteskin(ns)
 end;
 
 --//================================================================
@@ -400,11 +385,6 @@ function GetPreferredNoteskin(pn)
     else
         st = GAMEMAN:GetFirstStepsTypeForGame(g)
     end;
-    local profile = PROFILEMAN:GetProfile(pn);
-    if profile.get_preferred_noteskin then
-        return profile:get_preferred_noteskin(st)
-    elseif profile.GetNoteSkin then
-        return profile:GetNoteSkin()
-    end;
-    return THEME:GetMetric("Common", "DefaultGameNoteSkin");
+    return PROFILEMAN:GetProfile(pn):get_preferred_noteskin(st)
 end;
+

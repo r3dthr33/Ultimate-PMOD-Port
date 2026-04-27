@@ -33,9 +33,10 @@ local spacing = 290;
 			OnCommand=function(self)
 				self:diffuse(0.66,0.66,0.66,0.5);
 				self:strokecolor(0.1,0.1,0.1,1);
+				self:queuecommand("Refresh");
 			end;
 
-			UpdateMessageCommand=function(self)
+			RefreshCommand=function(self)
 				local hour = CapDigits(Hour(), 0, 2);
 				local min = CapDigits(Minute(), 0, 2);
 				local sec = CapDigits(Second(), 0, 2);
@@ -47,6 +48,8 @@ local spacing = 290;
 				local date = Year().."-"..month.."-"..day;
 
 				self:settext(date.."     "..time);
+				self:sleep(1);
+				self:queuecommand("Refresh");
 			end;	
 	};
 

@@ -20,13 +20,14 @@ local t = Def.ActorFrame{
 t[#t+1] = LoadActor(THEME:GetPathB("ScreenWithMenuElements","overlay"));
 
 t[#t+1] = Def.Actor{
-	BeginCommand=function(self)
+	OnCommand=function(self)
 		if SCREENMAN:GetTopScreen():HaveProfileToSave() then 
 			self:sleep(1); 
 		end;
-		self:queuecommand("Load");
+		self:queuecommand("Fadeout");
 	end;
-	LoadCommand=function() SCREENMAN:GetTopScreen():Continue(); end;
+	FadeoutCommand=function() MESSAGEMAN:Broadcast("Exit"); end;
+	LoadMessageCommand=function() SCREENMAN:GetTopScreen():Continue(); end;
 };
 
 return t;

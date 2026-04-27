@@ -121,36 +121,56 @@ end
 --//================================================================
 
 function ToInit() 
-	return "ScreenInit";
+	if GAMESTATE:GetCoinMode() == 'CoinMode_Home' then 
+		return "ScreenInit" 
+	else 
+		return "ScreenExit" 
+	end; 
 end;
 
 function ToTitleMenu() 
-	return "ScreenTitleMenu";
+	if GAMESTATE:GetCoinMode() == 'CoinMode_Home' then 
+		return "ScreenTitleMenu" 
+	else 
+		return "ScreenExit" 
+	end 
 end;
 
 function ToSelectMusic() 
-	if SONGMAN:GetNumSongs() == 0 and SONGMAN:GetNumAdditionalSongs() == 0 then
-		SCREENMAN:SystemMessage("Ultimate ToSelectMusic -> ScreenHowToInstallSongs (no songs)");
-		return "ScreenHowToInstallSongs";
-	end;
-	if IsRoutine() then
-		SCREENMAN:SystemMessage("Ultimate ToSelectMusic -> ScreenUnjoin (routine)");
-		return "ScreenUnjoin";
-	end;
-	SCREENMAN:SystemMessage("Ultimate ToSelectMusic -> ScreenSelectMusicCustom");
-	return "ScreenSelectMusicCustom";
+	if GAMESTATE:GetCoinMode() == 'CoinMode_Home' then 
+		if SONGMAN:GetNumSongs() == 0 and SONGMAN:GetNumAdditionalSongs() == 0 then
+			return "ScreenHowToInstallSongs"
+		else
+			if IsRoutine() then return "ScreenUnjoin" end;
+			return "ScreenSelectMusicCustom" 
+		end
+	else 
+		return "ScreenExit" 
+	end; 
 end;
 
 function ToGameplay()
-	return IsRoutine() and "ScreenGameplayShared" or "ScreenGameplay";
+	if GAMESTATE:GetCoinMode() == 'CoinMode_Home' then 
+		return IsRoutine() and "ScreenGameplayShared" or "ScreenGameplay"
+	else 
+		return "ScreenExit" 
+	end 
 end
 
 function AfterGameplay() 
-	return "ScreenProfileSave";
+	if GAMESTATE:GetCoinMode() == 'CoinMode_Home' then 
+		return "ScreenProfileSave"
+	else 
+		return "ScreenExit" 
+	end; 
 end;
 
 function ToEvaluation()
-	return "ScreenEvaluationCustom";
+	if GAMESTATE:GetCoinMode() == 'CoinMode_Home' then 
+		return "ScreenEvaluationCustom" 
+	else 
+		return "ScreenExit" 
+	end 
 end
 
 --//================================================================
@@ -195,3 +215,4 @@ function EditHelpTransform(self,offsetFromCenter,itemIndex,numItems)
 	local indexOffset = itemIndex-(numItems-1)/2; 
 	self:y( SCREEN_CENTER_Y + indexOffset * 17 ); 
 end
+

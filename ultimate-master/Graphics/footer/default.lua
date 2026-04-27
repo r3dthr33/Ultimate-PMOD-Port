@@ -1,5 +1,10 @@
 local t = Def.ActorFrame{}
 
+local function IsTitleMenu()
+	local screen = SCREENMAN and SCREENMAN:GetTopScreen();
+	return screen and screen:GetName() == "ScreenTitleMenu";
+end;
+
 t[#t+1] = LoadActor(THEME:GetPathG("","border"))..{
 	InitCommand=cmd(vertalign,top;y,-38;zoom,0.445;diffuse,0.8,0.8,0.8,1);
 };
@@ -20,7 +25,9 @@ for pn in ivalues({PLAYER_1,PLAYER_2}) do
 		PlayerUnjoinedMessageCommand=cmd(playcommand,"Refresh");
 		RefreshCommand=function(self)
 			self:settext(ToEnumShortString(pn));
-			if SideJoined(pn) then
+			if IsTitleMenu() then
+				self:diffusealpha(0.33);
+			elseif SideJoined(pn) then
 				if IsRoutine() and Global.master ~= pn then
 					self:diffusealpha(0.33); 
 				else
@@ -47,7 +54,13 @@ t[#t+1] = Def.BitmapText{
 	PlayerUnjoinedMessageCommand=cmd(playcommand,"Refresh");
 	RefreshCommand=function(self)
 
-		if SideJoined(pn) then
+		if IsTitleMenu() then
+			self:diffuseshift();
+			self:effectcolor1(0.5,0.5,0.5,0.5);
+			self:effectcolor2(1,1,1,0.5);
+			self:effectperiod(1);
+			self:settext("Press &START; to join");
+		elseif SideJoined(pn) then
 			self:stopeffect();
 			if IsRoutine() and Global.master ~= pn then
 				self:settext("");
