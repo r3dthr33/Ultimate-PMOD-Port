@@ -1,6 +1,6 @@
 # Version Log
 
-This file records the PMOD porting work done on the Ultimate theme, including earlier compatibility fixes and the current in-progress changes in the working tree.
+This file records the PMOD porting work done on the Ultimate theme in chronological order.
 
 ## Scope
 
@@ -14,7 +14,9 @@ Reference folders used during the port:
 
 These folders are reference only and are not part of the implementation target.
 
-## Compatibility Foundation
+## Change Timeline
+
+### 1. Compatibility Foundation
 
 The first major pass established the base compatibility layer needed for Ultimate to boot and own its own screens inside PMOD.
 
@@ -36,7 +38,7 @@ Problem solved:
 
 - Fixed the Lua runtime error in `ultimate-master/Scripts/Config.lua` caused by PMOD not exposing `create_lua_config`.
 
-## Screen Ownership And Fallback Control
+### 2. Screen Ownership And Fallback Control
 
 The next pass focused on stopping PMOD from visually taking over Ultimate screens.
 
@@ -54,9 +56,9 @@ Problems solved:
 - Title menu was loading PMOD's `ScreenTitleMenu` instead of Ultimate's.
 - Options screen was showing PMOD branding instead of staying visually consistent with Ultimate.
 
-## Resolution And Layout Fixes
+### 3. Resolution And Layout Fixes
 
-After screen ownership was corrected, Ultimate still rendered with the wrong scale and proportions under PMOD. The next pass normalized the screen layout.
+After screen ownership was corrected, Ultimate still rendered with the wrong scale and proportions under PMOD. This pass normalized the screen layout.
 
 Implemented changes:
 
@@ -71,7 +73,7 @@ Problems solved:
 - Full-screen background and frame elements were not covering the screen properly.
 - Footer behavior on title was drifting toward PMOD behavior.
 
-## Header Date And Time
+### 4. Header Date And Time
 
 The header needed a local refresh path once PMOD overlays were blocked.
 
@@ -84,7 +86,7 @@ Problem solved:
 
 - The top-right date and time were not appearing after the fallback visual cleanup.
 
-## Select Music And Profile Flow
+### 5. Select Music And Profile Flow
 
 The select music flow needed several compatibility edits so Ultimate could keep its own information flow while behaving correctly inside PMOD.
 
@@ -103,15 +105,9 @@ Purpose:
 
 - Keep Ultimate's own screen behavior active while aligning its data flow with PMOD's expectations for screen transitions, selected content, and player state.
 
-## Pure Lua Notefield Preview
+### 6. Pure Lua Notefield Preview
 
-The latest compatibility pass replaces a hardcoded SM5.2 assumption inside the select music preview.
-
-Background:
-
-- Ultimate's select music preview used `Def.NoteField`.
-- PMOD does not register `NoteField` as a usable actor class in this context.
-- The result was the runtime error: `NoteField is not a registered actor class`.
+Ultimate's select music preview used `Def.NoteField`, but PMOD does not register `NoteField` as a usable actor class in this context. This pass replaced that dependency.
 
 Implemented changes:
 
@@ -135,7 +131,7 @@ Problem solved:
 
 - Fixed the crash caused by PMOD lacking the SM5.2 hardcoded `NoteField` actor class in this screen.
 
-## Player Options And Mod Persistence
+### 7. Player Options And Mod Persistence
 
 The next compatibility pass focused on making Ultimate's select music option menus store player mods the way PMOD expects, so later screens can read the same state without breaking.
 
@@ -167,7 +163,7 @@ Problems solved:
   - `get_skin_names_for_stepstype`
   - `PlayerOptions:NoteSkin`
 
-## Banner Wheel Reflection Rework
+### 8. Banner Wheel Reflection Rework
 
 The banner wheel reflection needed a PMOD-friendly rendering path. Earlier reflection attempts relied on behavior that did not render correctly in this runtime.
 
@@ -183,9 +179,9 @@ Problem addressed:
 
 - The reflection had been rendering as a white faded quad or behaving inconsistently when driven through the wrong actor-loading path.
 
-## Assets, Cleanup, And Removed Files
+### 9. Assets, Cleanup, And Removed Files
 
-As part of the compatibility pass, some files were removed or replaced because they were obsolete, conflicting with PMOD fallback behavior, or no longer needed after compatibility rewrites.
+As the compatibility work progressed, some files were removed or replaced because they were obsolete, conflicting with PMOD fallback behavior, or no longer needed after compatibility rewrites.
 
 Notable cleanup included:
 
@@ -193,7 +189,7 @@ Notable cleanup included:
 - Removed obsolete Ultimate assets/scripts that were no longer used in the PMOD-compatible setup.
 - Replaced missing/fallback-driven screen pieces with explicit local Lua actors where needed.
 
-## Documentation Changes
+### 10. Documentation Changes
 
 Documentation was reorganized so the project context and the project history live in separate files.
 
@@ -202,6 +198,19 @@ Implemented changes:
 - `versionlog.md` now serves as the change history for the port.
 - `AI.md` is being kept as a context file only.
 - Change summaries previously duplicated in `AI.md` were removed so future assistants have one place for history and one place for working context.
+
+### 11. Notefield Preview Rollback
+
+The select music/player-options notefield preview went through several PMOD-specific rewrite attempts, including pure Lua rendering, noteskin sprite-only loading, receptor layering, and noteskin fallback experiments. The runtime constraints around noteskin metadata access and reliable fallback resolution were not stable enough to justify keeping a half-working preview path in the theme.
+
+Implemented change:
+
+- Removed the experimental notefield preview implementation entirely.
+- Replaced `ultimate-master/BGAnimations/ScreenSelectMusicCustom underlay/assets/notefield.lua` with an empty `Def.ActorFrame{}` stub.
+
+Reason:
+
+- Keep the theme stable and avoid misleading or broken preview behavior until a more reliable implementation path exists.
 
 ## Verification Status
 
@@ -217,7 +226,7 @@ Verified visually during the port:
 Verified by code inspection:
 
 - The select music preview no longer depends on native `Def.NoteField`.
-- The replacement preview is implemented fully in Lua and pulls noteskin art from PMOD's available `pump` noteskins.
+- The experimental Lua preview path was removed and replaced with an empty stub actor to keep the theme stable.
 
 Remaining note:
 
