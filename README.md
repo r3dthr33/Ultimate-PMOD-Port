@@ -2,6 +2,10 @@
 
 Port of the StepMania 5.2 theme **Ultimate** to **PMOD** (the Pump It Up focused StepMania fork).
 
+## Current Version
+
+`0.0.10`
+
 ## Repository Layout
 
 - `ultimate-master/` — working folder. All port changes happen here.
