@@ -8,6 +8,21 @@ local translit_subtitle;
 local translit_artist;
 
 local maxwidth = 360;
+local function GetEvalTimingDifficultyText()
+    if type(GetTimingDifficultyCompat) == "function" then
+        local value = tonumber(GetTimingDifficultyCompat()) or 4;
+        return tostring(value);
+    end;
+    return "4";
+end;
+
+local function GetEvalLifeDifficultyText()
+    if type(GetLifeDifficultyCompat) == "function" then
+        local value = tonumber(GetLifeDifficultyCompat()) or 4;
+        return tostring(value);
+    end;
+    return "4";
+end;
 
 local t = Def.ActorFrame{
     InitCommand=function(self)
@@ -79,14 +94,14 @@ t[#t+1] = Def.ActorFrame{
         Font = Fonts.eval["Info"];
         InitCommand=cmd(horizalign,right;vertalign,top;zoom,0.4;x,-12;y,18;
             strokecolor,0.2,0.2,0.2,1;shadowlength,1.25);
-        OnCommand=cmd(settext,"Timing Difficulty: "..GetTimingDifficulty());
+        OnCommand=cmd(settext,"Timing Difficulty: "..GetEvalTimingDifficultyText());
     },
 
     Def.BitmapText{
         Font = Fonts.eval["Info"];
         InitCommand=cmd(horizalign,right;vertalign,top;zoom,0.4;x,-12;y,32;
             strokecolor,0.2,0.2,0.2,1;shadowlength,1.25);
-        OnCommand=cmd(settext,"Life Difficulty: "..GetLifeDifficulty());
+        OnCommand=cmd(settext,"Life Difficulty: "..GetEvalLifeDifficultyText());
     },
 };
 

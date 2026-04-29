@@ -246,6 +246,12 @@ local dict_life = {
 
 function FormatOptionConfigs(str, val, pn)
     local prefs = pn and notefield_prefs_config:get_data(pn)
+    local text = tostring(val or "")
+
+    if str == "judgmentSkin" or str == "lifebarSkin" then
+        text = string.gsub(text, "^i_", "")
+        text = string.gsub(text, "^e_", "")
+    end;
 
     local format = {
         ["BGBrightness"]        = tostring(val).."%",
@@ -261,11 +267,39 @@ function FormatOptionConfigs(str, val, pn)
 
         ["speed_mod"]           = prefs and FormatSpeed(prefs.speed_mod, prefs.speed_type) or val,
         ["speed_type"]          = prefs and FormatSpeedType(prefs.speed_type) or val,
+        ["SpeedEffect"]         = ({
+            none = "None",
+            expand = "EW",
+            randomvel = "RV",
+            accel = "AC",
+            decel = "DC",
+        })[tostring(val)] or tostring(val),
         ["hidden"]              = dict_bool(val),
         ["sudden"]              = dict_bool(val),
         ["glow_during_fade"]    = dict_bool(val),
         ["ReverseJudgment"]     = dict_bool(val),
         ["reverse"]             = dict_reverse(val),
+        ["Expand"]              = dict_bool(val),
+        ["RandomVel"]           = dict_bool(val),
+        ["Accel"]               = dict_bool(val),
+        ["Decel"]               = dict_bool(val),
+        ["Vanish"]              = dict_bool(val),
+        ["Appear"]              = dict_bool(val),
+        ["Nonstep"]             = dict_bool(val),
+        ["Dark"]                = dict_bool(val),
+        ["RandomNote"]          = dict_bool(val),
+        ["Flash"]               = dict_bool(val),
+        ["Mini"]                = dict_bool(val),
+        ["XMode"]               = dict_bool(val),
+        ["NXMode"]              = dict_bool(val),
+        ["UnderAttack"]         = dict_bool(val),
+        ["Drop"]                = dict_bool(val),
+        ["Snake"]               = dict_bool(val),
+        ["ZigZag"]              = dict_bool(val),
+        ["Mirror"]              = dict_bool(val),
+        ["SuperShuffle"]        = dict_bool(val),
+        ["Backwards"]           = dict_bool(val),
+        ["JudgeReverse"]        = dict_bool(val),
 
         ["zoom"]                = prefs and (prefs.zoom * 100).."%" or val,
         ["zoom_x"]              = prefs and (prefs.zoom_x * 100).."%" or val,
@@ -280,6 +314,30 @@ function FormatOptionConfigs(str, val, pn)
         ["ShowJudgmentList"]    = dict_bool(val),
         ["ShowOffsetMeter"]     = dict_bool(val),
         ["ShowPacemaker"]       = UppercaseFirst(tostring(val)),
+        ["BGA"]                 = UppercaseFirst(tostring(val)),
+        ["Rise"]                = ({
+            off = "Off",
+            sink = "Sink",
+            rise = "Rise",
+        })[tostring(val)] or tostring(val),
+        ["JudgeDifficulty"]     = ({
+            normal = "Normal",
+            hard = "Hard",
+            veryhard = "Very Hard",
+            extra = "Extra Hard",
+            ultra = "Ultra Hard",
+        })[tostring(val)] or tostring(val),
+        ["Rush"]                = dict_float(val, "x"),
+        ["PreferredSort"]       = tostring(val),
+        ["Timing"]              = dict_bool(val),
+        ["BreakIcon"]           = dict_bool(val),
+        ["ScoreUI"]             = dict_bool(val),
+        ["JudgeData"]           = dict_bool(val),
+        ["MusicDuration"]       = dict_bool(val),
+        ["StepLevel"]           = dict_bool(val),
+        ["judgmentSkin"]        = text,
+        ["judgmentZoom"]        = tostring(val).."%",
+        ["lifebarSkin"]         = text,
     }
 
     local a = THEME:HasString("Configs", str) and THEME:GetString("Configs", str) or str;

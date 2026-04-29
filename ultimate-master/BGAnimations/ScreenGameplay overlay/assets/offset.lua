@@ -1,19 +1,48 @@
 local t = Def.ActorFrame{}
-local scale = PREFSMAN:GetPreference("TimingWindowScale") or 1.0;
-local add = PREFSMAN:GetPreference("TimingWindowAdd") or 0.0;
-local timings = {
-    { Value = (PREFSMAN:GetPreference("TimingWindowSecondsW1") * scale) + add, Key = "Flawless" },
-    { Value = (PREFSMAN:GetPreference("TimingWindowSecondsW2") * scale) + add, Key = "Perfect" },
-    { Value = (PREFSMAN:GetPreference("TimingWindowSecondsW3") * scale) + add, Key = "Great" },
-    { Value = (PREFSMAN:GetPreference("TimingWindowSecondsW4") * scale) + add, Key = "Good" },
-    { Value = (PREFSMAN:GetPreference("TimingWindowSecondsW5") * scale) + add, Key = "Bad" },
-}
 
-local maxtiming = math.max(timings[1].Value,timings[2].Value,timings[3].Value,timings[4].Value,timings[5].Value);
+local base_timing_windows = {
+    0.0225,
+    0.0450,
+    0.0900,
+    0.1350,
+    0.1800,
+};
+
+local function GetJudgmentOptionsForPlayer(pn)
+    local pstate = GAMESTATE:GetPlayerState(pn);
+    if not pstate or type(pstate.GetPlayerOptions) ~= "function" then return nil end;
+    local current = pstate:GetPlayerOptions("ModsLevel_Current");
+    if current then return current end;
+    return pstate:GetPlayerOptions("ModsLevel_Preferred");
+end;
+
+local function GetPMODTimingScale(pn)
+    local pops = GetJudgmentOptionsForPlayer(pn);
+    if not pops then return 1.0 end;
+    if type(pops.UltraHardJudgement) == "function" and pops:UltraHardJudgement() then return 0.33 end;
+    if type(pops.ExtraJudgement) == "function" and pops:ExtraJudgement() then return 0.50 end;
+    if type(pops.VeryHardJudgement) == "function" and pops:VeryHardJudgement() then return 0.66 end;
+    if type(pops.HardJudgement) == "function" and pops:HardJudgement() then return 0.84 end;
+    return 1.0;
+end;
+
+local function BuildPMODTimingWindows(pn)
+    local scale = GetPMODTimingScale(pn);
+    local timings = {
+        { Value = base_timing_windows[1] * scale, Key = "Flawless" },
+        { Value = base_timing_windows[2] * scale, Key = "Perfect" },
+        { Value = base_timing_windows[3] * scale, Key = "Great" },
+        { Value = base_timing_windows[4] * scale, Key = "Good" },
+        { Value = base_timing_windows[5] * scale, Key = "Bad" },
+    };
+    local maxtiming = math.max(timings[1].Value, timings[2].Value, timings[3].Value, timings[4].Value, timings[5].Value);
+    return timings, maxtiming;
+end;
+
 local meterwidth = 160;
 local meterheight = 14;
 
-local function TickColor(timing)
+local function TickColor(timings, timing)
     for i=1,#timings do
         if timing <= timings[i].Value then 
             return JudgmentColor(timings[i].Key)
@@ -24,6 +53,7 @@ end;
 
 for pn in ivalues(GAMESTATE:GetHumanPlayers()) do
     if SideJoined(pn) and PLAYERCONFIG:get_data(pn).ShowOffsetMeter then
+        local timings, maxtiming = BuildPMODTimingWindows(pn);
 
         local o = Def.ActorFrame{
             OnCommand=function(self)
@@ -78,7 +108,7 @@ for pn in ivalues(GAMESTATE:GetHumanPlayers()) do
                     local xpos = (offset/maxtiming) * (meterwidth-4) * 0.5;
 
                     self:stoptweening();
-                    self:playcommand("Pulse", { Color = TickColor(math.abs(offset)) });
+                    self:playcommand("Pulse", { Color = TickColor(timings, math.abs(offset)) });
                     self:diffusealpha(1);
                     self:decelerate(0.075);
                     self:x(xpos);

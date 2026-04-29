@@ -4,6 +4,29 @@ local maxitems = 6;
 local currentoption = nil;  
 local option_stack = {};
 local selection_stack = {};
+local ConfigCustomRangeCompat = ConfigCustomRange or function(name, default, min, max, step, getter, setter)
+    return {
+        Name = name,
+        Type = "range",
+        Field = name,
+        Default = default,
+        Range = { Min = min, Max = max, Step = step },
+        Get = getter,
+        Set = setter,
+    }
+end;
+
+local ConfigCustomBoolCompat = ConfigCustomBool or function(name, default, getter, setter, choices)
+    return {
+        Name = name,
+        Type = "bool",
+        Field = name,
+        Default = default,
+        Choices = choices or { true, false },
+        Get = getter,
+        Set = setter,
+    }
+end;
 local option_tree = { 
 
     {
@@ -11,8 +34,14 @@ local option_tree = {
         Options = {
             ConfigRange(THEMECONFIG, "BGBrightness", 100, 0, 100, 5),
             ConfigBool(THEMECONFIG, "DefaultBG", false),
-            ConfigBool(THEMECONFIG, "DisableBGA", false),
-            ConfigBool(THEMECONFIG, "CenterPlayer", false),
+            ConfigCustomBoolCompat("DisableBGA", false,
+                function() return GetDisableBGACompat() end,
+                function(_, newvalue) SetDisableBGACompat(newvalue) end
+            ),
+            ConfigCustomBoolCompat("CenterPlayer", false,
+                function() return GetCenterPlayerCompat() end,
+                function(_, newvalue) SetCenterPlayerCompat(newvalue) end
+            ),
             ConfigAction("Reset", function() ResetDisplayOptions() end),
             ConfigExit("Back"),
         },
@@ -21,7 +50,10 @@ local option_tree = {
     {
         Name = "Song",
         Options = {
-            ConfigRange(THEMECONFIG, "MusicRate", 1, 0.5, 2, 0.05),
+            ConfigCustomRangeCompat("MusicRate", 1, 0.5, 2, 0.05,
+                function() return GetMusicRateCompat() end,
+                function(_, newvalue) SetMusicRateCompat(newvalue) end
+            ),
             ConfigChoices(THEMECONFIG, "FailType", "delayed", { "immediate", "delayed", "off" }),
             ConfigBool(THEMECONFIG, "FailMissCombo", true),
             ConfigAction("Reset", function() ResetSongOptions() end),
@@ -32,9 +64,18 @@ local option_tree = {
     {
         Name = "Judgment",
         Options = {
-            ConfigBool(THEMECONFIG, "AllowW1"),
-            ConfigRange(THEMECONFIG, "TimingDifficulty", 4, 1, 9, 1),
-            ConfigRange(THEMECONFIG, "LifeDifficulty", 4, 1, 7, 1),
+            ConfigCustomBoolCompat("AllowW1", true,
+                function() return GetAllowW1Compat() end,
+                function(_, newvalue) SetAllowW1Compat(newvalue) end
+            ),
+            ConfigCustomRangeCompat("TimingDifficulty", 4, 1, 9, 1,
+                function() return GetTimingDifficultyCompat() end,
+                function(_, newvalue) SetTimingDifficultyCompat(newvalue) end
+            ),
+            ConfigCustomRangeCompat("LifeDifficulty", 4, 1, 7, 1,
+                function() return GetLifeDifficultyCompat() end,
+                function(_, newvalue) SetLifeDifficultyCompat(newvalue) end
+            ),
             ConfigAction("Reset", function() ResetJudgmentOptions() end),
             ConfigExit("Back"),
         },
