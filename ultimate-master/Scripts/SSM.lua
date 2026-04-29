@@ -25,6 +25,15 @@ function SetSSM()
         --end
     end;
 
+    -- Reapply Ultimate-saved player config onto PMOD preferred options when
+    -- returning from gameplay so the SSM menu reflects the previously selected
+    -- mods instead of whatever transient runtime state gameplay left behind.
+    for pn in ivalues(GAMESTATE:GetHumanPlayers()) do
+        if SideJoined(pn) and type(ApplyPlayerOptionsFromThemeConfig) == "function" then
+            ApplyPlayerOptionsFromThemeConfig(pn);
+        end;
+    end;
+
     FixStyleForSteps(Global.pncursteps[Global.master]);
 
     MESSAGEMAN:Broadcast("BuildMusicList", { first = true });
@@ -354,12 +363,16 @@ end;
 local function GetProfileNoteskin(profile, stepstype)
     if not profile then return NOTESKIN:GetDefaultGameNoteSkin() end;
 
-    if type(profile.get_preferred_noteskin) == "function" then
-        return profile:get_preferred_noteskin(stepstype);
+    if type(profile.GetNoteSkin) == "function" then
+        local skin = profile:GetNoteSkin();
+        if skin and skin ~= "" then return skin end;
     end;
 
-    if type(profile.GetNoteSkin) == "function" then
-        return profile:GetNoteSkin();
+    if type(profile.get_preferred_noteskin) == "function" then
+        local ok, skin = pcall(function() return profile:get_preferred_noteskin(stepstype); end);
+        if ok and skin and skin ~= "" then
+            return skin;
+        end;
     end;
 
     return NOTESKIN:GetDefaultGameNoteSkin();
@@ -367,14 +380,21 @@ end;
 
 local function SetProfileNoteskin(profile, stepstype, skin)
     if not profile or not skin then return end;
-
-    if type(profile.set_preferred_noteskin) == "function" then
-        profile:set_preferred_noteskin(skin);
-        return;
-    end;
+    local normalized_skin = string.lower(tostring(skin));
 
     if type(profile.SetNoteSkin) == "function" then
-        profile:SetNoteSkin(skin);
+        profile:SetNoteSkin(normalized_skin);
+    end;
+
+    if type(profile.set_preferred_noteskin) == "function" then
+        local ok = pcall(function()
+            profile:set_preferred_noteskin(stepstype, normalized_skin);
+        end);
+        if not ok then
+            pcall(function()
+                profile:set_preferred_noteskin(normalized_skin);
+            end);
+        end;
     end;
 end;
 
@@ -402,9 +422,10 @@ function SetNoteskinByIndex(pn, num)
     local st = GAMEMAN:GetFirstStepsTypeForGame(g);
     local noteskins = GetNoteskins();
     local index = clamp(num,1,#noteskins)
-    SetProfileNoteskin(PROFILEMAN:GetProfile(pn), st, noteskins[index]);
-    ApplyPreferredNoteskinCompat(pn, noteskins[index]);
-    return noteskins[index];
+    local skin = string.lower(tostring(noteskins[index]));
+    SetProfileNoteskin(PROFILEMAN:GetProfile(pn), st, skin);
+    ApplyPreferredNoteskinCompat(pn, skin);
+    return skin;
 end;
 
 
@@ -418,8 +439,9 @@ function SetNoteskin(pn, ns)
     else
         st = GAMEMAN:GetFirstStepsTypeForGame(g)
     end;
-    SetProfileNoteskin(PROFILEMAN:GetProfile(pn), st, ns);
-    ApplyPreferredNoteskinCompat(pn, ns);
+    local skin = string.lower(tostring(ns));
+    SetProfileNoteskin(PROFILEMAN:GetProfile(pn), st, skin);
+    ApplyPreferredNoteskinCompat(pn, skin);
 end;
 
 --//================================================================

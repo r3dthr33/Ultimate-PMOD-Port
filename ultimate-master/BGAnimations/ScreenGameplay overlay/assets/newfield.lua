@@ -1,22 +1,27 @@
-local t = Def.ActorFrame{
-    OnCommand=function(self)
-        for pn in ivalues(GAMESTATE:GetHumanPlayers()) do
-            local field = find_pactor_in_gameplay(SCREENMAN:GetTopScreen(), pn);
-            --[[
-                field:addy(-128);
-                field:sleep(0.5);
-                field:decelerate(0.3);
-                field:addy(128);
-            ]]
-        end;
+local function FindGameplayPlayerActor(screen_gameplay, pn)
+    if not screen_gameplay or type(screen_gameplay.GetChild) ~= "function" then
+        return nil;
+    end;
 
+    local actor = screen_gameplay:GetChild("Player" .. ToEnumShortString(pn));
+    if actor then return actor end;
+
+    return screen_gameplay:GetChild("Player");
+end;
+
+return Def.ActorFrame{
+    OnCommand=function(self)
+        -- PMOD gameplay uses the engine's native player/notefield state
+        -- directly.  Ultimate already applies preferred player options before
+        -- gameplay, so this actor only keeps the routine-specific visibility
+        -- behavior that Ultimate expected from the old helper layer.
         if IsRoutine() then
-            find_pactor_in_gameplay(SCREENMAN:GetTopScreen(), OtherPlayer[Global.master]):hibernate(math.huge);
+            local screen = SCREENMAN:GetTopScreen();
+            local other = OtherPlayer[Global.master];
+            local other_actor = FindGameplayPlayerActor(screen, other);
+            if other_actor then
+                other_actor:hibernate(math.huge);
+            end;
         end;
     end;
-}
-
-t[#t+1] = notefield_mods_actor();
-t[#t+1] = notefield_prefs_actor();
-
-return t;
+};
