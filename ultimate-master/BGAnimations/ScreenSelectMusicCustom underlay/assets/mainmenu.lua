@@ -65,6 +65,19 @@ end;
 --//================================================================
 
 function ReadyDecision(param)
+    local function ReseatCurrentStepsForPreload()
+        if GAMESTATE:GetNumSidesJoined() == 1 then
+            if PureType(Global.mastersteps) == "Routine" then
+                GAMESTATE:SetCurrentSteps(PLAYER_1, Global.mastersteps);
+                GAMESTATE:SetCurrentSteps(PLAYER_2, Global.mastersteps);
+            else
+                GAMESTATE:SetCurrentSteps(Global.master, Global.mastersteps);
+            end;
+        else
+            GAMESTATE:SetCurrentSteps(PLAYER_1, Global.pncursteps[PLAYER_1]);
+            GAMESTATE:SetCurrentSteps(PLAYER_2, Global.pncursteps[PLAYER_2]);
+        end;
+    end;
 
     GAMESTATE:SetCurrentSong(Global.song);
     GAMESTATE:SetPreferredSong(Global.song);
@@ -94,6 +107,9 @@ function ReadyDecision(param)
 
 
     ApplyThemeSettings();
+
+    ReseatCurrentStepsForPreload();
+
     reset_needs_defective_field_for_all_players()
     SCREENMAN:SetNewScreen("ScreenStageInformation");
 

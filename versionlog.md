@@ -160,7 +160,7 @@ Implemented:
   - `Rush`
   - `Reset All`
 
-## 0.0.10 — Main Player Options Preview And Persistence Cleanup
+## 0.0.10 - Main Player Options Preview And Persistence Cleanup
 
 Implemented:
 
@@ -180,3 +180,32 @@ Implemented:
 Solved:
 
 - Returning from gameplay via Back now restores previously selected PMOD-style mods in SSM instead of partially dropping them.
+
+## 0.0.11 - PMOD Noteskin Reset And Theme Self-Hosting
+
+Implemented:
+
+- Reset Ultimate's noteskin handling to follow PMOD's live behavior more closely:
+  - noteskin selection now saves through `PROFILE:SetNoteSkin(...)`
+  - removed Ultimate-specific noteskin mirroring into preferred/current player options
+  - removed SM5.2-style `set_preferred_noteskin(...)` fallback writes from the active PMOD path
+- Cleaned noteskin-related leftovers from:
+  - `ultimate-master/Scripts/SSM.lua`
+  - `ultimate-master/Scripts/Config.lua`
+  - `ultimate-master/BGAnimations/ScreenSelectMusicCustom underlay/assets/mainmenu.lua`
+- Added a local `ScreenSystemLayer` debug overlay path for runtime inspection.
+- Switched Ultimate's fallback theme to `_fallback` instead of `pmod`.
+- Added local PMOD-dependent theme resources so Ultimate can provide them itself:
+  - `ultimate-master/Other/option.json`
+  - `ultimate-master/Graphics/Common nobanner.png`
+  - `ultimate-master/Graphics/Common nopreview.jpg`
+- Added local metrics definitions needed after reducing direct PMOD fallback dependence, including:
+  - `CodeDetector`
+  - `ScoreKeeperPrime`
+  - local `ScreenStageInformation` behavior
+  - local noteskin defaults
+
+Addressed:
+
+- Removed the old hybrid noteskin-saving experiments so Ultimate has a clean PMOD-style starting point again.
+- Reduced direct dependence on PMOD theme assets/metrics for common runtime paths.

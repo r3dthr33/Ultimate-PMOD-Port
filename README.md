@@ -6,7 +6,7 @@ Just to see what AI is capable of.
 
 ## Current Version
 
-`0.0.10`
+`0.0.11`
 
 ## What doesn't work
 
