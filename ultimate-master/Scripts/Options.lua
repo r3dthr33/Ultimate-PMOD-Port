@@ -451,8 +451,23 @@ function GetCurrentStackInfo(stack, pn)
     if not stack then return {} end;
     pn = ResolveSummaryPlayer(pn);
 
+    if pn == nil then
+        if Global and Global.master then
+            pn = Global.master;
+        elseif GAMESTATE and type(GAMESTATE.GetMasterPlayerNumber) == "function" then
+            pn = GAMESTATE:GetMasterPlayerNumber();
+        end;
+    end;
+
+    if pn and stack[pn] then
+        stack = stack[pn];
+    end;
+
+    if not stack or #stack == 0 then return {} end;
+
     local infotable = {};
-    local cur = stack[#stack] 
+    local cur = stack[#stack];
+    if not cur then return infotable end;
 
     for i=1,#cur do
         local info = {}

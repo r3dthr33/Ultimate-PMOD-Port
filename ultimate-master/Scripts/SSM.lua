@@ -1,4 +1,4 @@
---//================================================================    
+--//================================================================
 
 function SetSSM()
     if IsRoutine() then
@@ -48,7 +48,7 @@ function SetSSM()
     Global.blocksteps = true;
     Global.lockinput = true;
     Global.disqualify = false;
-    
+
     MESSAGEMAN:Broadcast("StateChanged");
 end;
 
