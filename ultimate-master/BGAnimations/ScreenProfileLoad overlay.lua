@@ -21,8 +21,8 @@ t[#t+1] = LoadActor(THEME:GetPathB("ScreenWithMenuElements","overlay"));
 
 t[#t+1] = Def.Actor{
 	OnCommand=function(self)
-		if SCREENMAN:GetTopScreen():HaveProfileToLoad() then 
-			self:sleep(1); 
+		if SCREENMAN:GetTopScreen():HaveProfileToLoad() then
+			self:sleep(1);
 		end;
 		self:queuecommand("Fadeout");
 	end;

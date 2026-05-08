@@ -223,3 +223,15 @@ if type(reset_needs_defective_field_for_all_players) ~= "function" then
 		end;
 	end;
 end;
+
+if type(GetCurNSAlpha) ~= "function" then
+	function GetCurNSAlpha(player)
+		if not GAMESTATE or type(GAMESTATE.GetPlayerState) ~= "function" then return 1 end;
+		local playerstate = GAMESTATE:GetPlayerState(player);
+		if not playerstate or type(playerstate.GetPlayerOptions) ~= "function" then return 1 end;
+		local poptions = playerstate:GetPlayerOptions("ModsLevel_Current");
+		if not poptions or type(poptions.Dark) ~= "function" then return 1 end;
+		local dark = poptions:Dark() or 0;
+		return 1.0 - dark;
+	end;
+end;

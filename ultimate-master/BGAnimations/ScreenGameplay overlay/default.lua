@@ -29,7 +29,7 @@ local t = Def.ActorFrame{
         	for pn in ivalues(GAMESTATE:GetHumanPlayers()) do
         		STATSMAN:GetCurStageStats():GetPlayerStageStats(pn):FailPlayer();
         	end;
-        	SCREENMAN:SetNewScreen("ScreenEvaluationCustom");
+        	SCREENMAN:SetNewScreen("ScreenStageBreak");
         end;
 
 	end;

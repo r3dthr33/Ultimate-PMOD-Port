@@ -165,6 +165,33 @@ function AfterGameplay()
 	end; 
 end;
 
+function AfterGameplayScreen()
+	if GAMESTATE:GetCoinMode() ~= 'CoinMode_Home' then
+		return "ScreenExit"
+	end
+
+	local stats = STATSMAN and STATSMAN:GetCurStageStats()
+	local players = GAMESTATE:GetHumanPlayers()
+
+	if stats and players and #players > 0 then
+		local all_failed = true
+
+		for pn in ivalues(players) do
+			local pss = stats:GetPlayerStageStats(pn)
+			if not pss or not pss:GetFailed() then
+				all_failed = false
+				break
+			end
+		end
+
+		if all_failed then
+			return "ScreenStageBreak"
+		end
+	end
+
+	return ToEvaluation()
+end
+
 function ToEvaluation()
 	if GAMESTATE:GetCoinMode() == 'CoinMode_Home' then 
 		return "ScreenEvaluationCustom" 
@@ -215,4 +242,3 @@ function EditHelpTransform(self,offsetFromCenter,itemIndex,numItems)
 	local indexOffset = itemIndex-(numItems-1)/2; 
 	self:y( SCREEN_CENTER_Y + indexOffset * 17 ); 
 end
-

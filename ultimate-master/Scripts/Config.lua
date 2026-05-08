@@ -854,13 +854,6 @@ function ApplyPlayerOptionsFromThemeConfig(pn)
         poptions:XMod(2, 1000);
     end;
 
-    if profile and type(profile.GetNoteSkin) == "function" and type(poptions.NoteSkin) == "function" then
-        local noteskin = profile:GetNoteSkin();
-        if noteskin and noteskin ~= "" then
-            poptions:NoteSkin(string.lower(tostring(noteskin)));
-        end;
-    end;
-
     if type(poptions.Vanish) == "function" then poptions:Vanish(GetStoredPMODBool(pn, "Vanish", false) and 1 or 0) end;
     if type(poptions.Appear) == "function" then poptions:Appear(GetStoredPMODBool(pn, "Appear", false) and 1 or 0) end;
     if type(poptions.Nonstep) == "function" then poptions:Nonstep(GetStoredPMODBool(pn, "Nonstep", false) and 1 or 0) end;
