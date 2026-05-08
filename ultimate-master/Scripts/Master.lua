@@ -121,48 +121,28 @@ end
 --//================================================================
 
 function ToInit() 
-	if GAMESTATE:GetCoinMode() == 'CoinMode_Home' then 
-		return "ScreenInit" 
-	else 
-		return "ScreenExit" 
-	end; 
+	return "ScreenInit";
 end;
 
 function ToTitleMenu() 
-	if GAMESTATE:GetCoinMode() == 'CoinMode_Home' then 
-		return "ScreenTitleMenu" 
-	else 
-		return "ScreenExit" 
-	end 
+	return "ScreenTitleMenu";
 end;
 
 function ToSelectMusic() 
-	if GAMESTATE:GetCoinMode() == 'CoinMode_Home' then 
-		if SONGMAN:GetNumSongs() == 0 and SONGMAN:GetNumAdditionalSongs() == 0 then
-			return "ScreenHowToInstallSongs"
-		else
-			if IsRoutine() then return "ScreenUnjoin" end;
-			return "ScreenSelectMusicCustom" 
-		end
-	else 
-		return "ScreenExit" 
-	end; 
+	if SONGMAN:GetNumSongs() == 0 and SONGMAN:GetNumAdditionalSongs() == 0 then
+		return "ScreenHowToInstallSongs"
+	end;
+
+	if IsRoutine() then return "ScreenUnjoin" end;
+	return "ScreenSelectMusicCustom";
 end;
 
 function ToGameplay()
-	if GAMESTATE:GetCoinMode() == 'CoinMode_Home' then 
-		return IsRoutine() and "ScreenGameplayShared" or "ScreenGameplay"
-	else 
-		return "ScreenExit" 
-	end 
+	return IsRoutine() and "ScreenGameplayShared" or "ScreenGameplay";
 end
 
 function AfterGameplay() 
-	if GAMESTATE:GetCoinMode() == 'CoinMode_Home' then 
-		return "ScreenProfileSave"
-	else 
-		return "ScreenExit" 
-	end; 
+	return "ScreenProfileSave";
 end;
 
 function AfterGameplayScreen()
@@ -193,11 +173,7 @@ function AfterGameplayScreen()
 end
 
 function ToEvaluation()
-	if GAMESTATE:GetCoinMode() == 'CoinMode_Home' then 
-		return "ScreenEvaluationCustom" 
-	else 
-		return "ScreenExit" 
-	end 
+	return "ScreenEvaluationCustom";
 end
 
 --//================================================================

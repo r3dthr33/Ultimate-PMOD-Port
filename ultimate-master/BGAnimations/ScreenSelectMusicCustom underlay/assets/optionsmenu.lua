@@ -97,6 +97,25 @@ table.insert(option_stack, option_tree);
 
 --//================================================================
 
+local function GetOptionsMenuPlayer()
+    if Global and (Global.master == PLAYER_1 or Global.master == PLAYER_2) and GAMESTATE:IsSideJoined(Global.master) then
+        return Global.master;
+    end;
+
+    local master = GAMESTATE:GetMasterPlayerNumber();
+    if master == PLAYER_1 or master == PLAYER_2 then
+        return master;
+    end;
+
+    for pn in ivalues(GAMESTATE:GetHumanPlayers()) do
+        return pn;
+    end;
+
+    return PLAYER_1;
+end;
+
+--//================================================================
+
 function OptionsMenuController(self,param)
 
     if param.Input == "Prev" then
@@ -263,7 +282,7 @@ local t = PropertyActor()..{
     PropertyChangedMessageCommand=cmd(playcommand,"Refresh");
     ReturnMessageCommand=function(self,param) if param and param.Target == "OptionsMenu" then self:playcommand("Refresh"); end end;
     RefreshCommand=function()
-        local info = GetCurrentStackInfo(option_stack);
+        local info = GetCurrentStackInfo(option_stack, GetOptionsMenuPlayer());
         scroller:set_info_set(info, Global.selection);
         MESSAGEMAN:Broadcast("ScrollerCursor", { Focused = ScrollerFocus(scroller, Global.selection, currentoption) });
         MESSAGEMAN:Broadcast("OptionMenuDescription", { Description = info and info[Global.selection] and info[Global.selection].Description or "" });

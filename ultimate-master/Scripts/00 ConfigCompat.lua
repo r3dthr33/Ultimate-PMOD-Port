@@ -226,11 +226,14 @@ end;
 
 if type(GetCurNSAlpha) ~= "function" then
 	function GetCurNSAlpha(player)
-		if not GAMESTATE or type(GAMESTATE.GetPlayerState) ~= "function" then return 1 end;
-		local playerstate = GAMESTATE:GetPlayerState(player);
-		if not playerstate or type(playerstate.GetPlayerOptions) ~= "function" then return 1 end;
-		local poptions = playerstate:GetPlayerOptions("ModsLevel_Current");
+		if not player then return 1 end;
+
+		local pstate = GAMESTATE and GAMESTATE:GetPlayerState(player);
+		if not pstate or type(pstate.GetPlayerOptions) ~= "function" then return 1 end;
+
+		local poptions = pstate:GetPlayerOptions("ModsLevel_Current");
 		if not poptions or type(poptions.Dark) ~= "function" then return 1 end;
+
 		local dark = poptions:Dark() or 0;
 		return 1.0 - dark;
 	end;
