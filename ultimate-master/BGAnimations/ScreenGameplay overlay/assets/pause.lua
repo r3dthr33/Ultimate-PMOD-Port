@@ -255,7 +255,6 @@ local function input(event)
 		if detect_lr_press() then
 			pause_and_show(pn)
 		elseif pause_buttons[button] then
-			if GAMESTATE:GetCoinMode() == "CoinMode_Pay" then return end
 			if pause_press_times[pn] and not other_button_down(button) then
 				local time_since_press= GetTimeSinceStart() - pause_press_times[pn]
 				if time_since_press > tap_debounce_time then

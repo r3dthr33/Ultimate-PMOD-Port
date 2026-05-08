@@ -208,7 +208,34 @@ local speed_effect_labels = {
     decel = "DC",
 };
 
+local function IsSummaryPlayer(pn)
+    return pn == PLAYER_1 or pn == PLAYER_2;
+end;
+
+local function ResolveSummaryPlayer(pn)
+    if IsSummaryPlayer(pn) then return pn end;
+
+    if Global and IsSummaryPlayer(Global.master) then
+        return Global.master;
+    end;
+
+    if GAMESTATE and type(GAMESTATE.GetMasterPlayerNumber) == "function" then
+        local master = GAMESTATE:GetMasterPlayerNumber();
+        if IsSummaryPlayer(master) then return master end;
+    end;
+
+    if GAMESTATE and type(GAMESTATE.GetHumanPlayers) == "function" then
+        for player in ivalues(GAMESTATE:GetHumanPlayers()) do
+            if IsSummaryPlayer(player) then return player end;
+        end;
+    end;
+
+    return PLAYER_1;
+end;
+
 local function GetSpeedEffectToggleCompat(pn, effect)
+    pn = ResolveSummaryPlayer(pn);
+
     if type(GetPMODSpeedEffectToggle) == "function" then
         return GetPMODSpeedEffectToggle(pn, effect);
     end;
@@ -225,6 +252,8 @@ local function GetSpeedEffectToggleCompat(pn, effect)
 end;
 
 local function GetPreferredOptionValueCompat(pn, method, default)
+    pn = ResolveSummaryPlayer(pn);
+
     local pstate = GAMESTATE and GAMESTATE:GetPlayerState(pn);
     if not pstate then return default end;
 
@@ -256,6 +285,8 @@ local function IsEnabledBoolLike(value)
 end;
 
 local function BuildSpeedMenuSummary(pn)
+    pn = ResolveSummaryPlayer(pn);
+
     local nconf = NOTESCONFIG and NOTESCONFIG:get_data(pn);
     if not nconf then return "" end;
 
@@ -283,6 +314,8 @@ local function BuildSpeedMenuSummary(pn)
 end;
 
 local function BuildDisplayMenuSummary(pn)
+    pn = ResolveSummaryPlayer(pn);
+
     local parts = {};
     local nconf = NOTESCONFIG and NOTESCONFIG:get_data(pn);
     local pconf = PLAYERCONFIG and PLAYERCONFIG:get_data(pn);
@@ -336,6 +369,8 @@ local function BuildDisplayMenuSummary(pn)
 end;
 
 local function BuildPathMenuSummary(pn)
+    pn = ResolveSummaryPlayer(pn);
+
     local parts = {};
 
     local path_flags = {
@@ -365,6 +400,8 @@ local function BuildPathMenuSummary(pn)
 end;
 
 local function BuildAlternateMenuSummary(pn)
+    pn = ResolveSummaryPlayer(pn);
+
     local parts = {};
     local alternate_flags = {
         { method = "Mirror", label = "M" },
@@ -383,6 +420,8 @@ local function BuildAlternateMenuSummary(pn)
 end;
 
 local function BuildJudgeMenuSummary(pn)
+    pn = ResolveSummaryPlayer(pn);
+
     local difficulty = type(GetPMODJudgeDifficulty) == "function" and GetPMODJudgeDifficulty(pn) or "normal";
     local difficulty_labels = {
         normal = "Normal",
@@ -410,6 +449,7 @@ end;
 
 function GetCurrentStackInfo(stack, pn)
     if not stack then return {} end;
+    pn = ResolveSummaryPlayer(pn);
 
     local infotable = {};
     local cur = stack[#stack] 

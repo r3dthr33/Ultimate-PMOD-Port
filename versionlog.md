@@ -209,3 +209,55 @@ Addressed:
 
 - Removed the old hybrid noteskin-saving experiments so Ultimate has a clean PMOD-style starting point again.
 - Reduced direct dependence on PMOD theme assets/metrics for common runtime paths.
+
+## 0.0.12 - PMOD6 Self-Hosting Fixes
+
+Implemented:
+
+- Added local PMOD net room strings used by PMOD6.
+- Added missing PMOD6 Common noteskin metrics:
+  - `NSWhiteList`
+  - `DefaultNoteSkinPlayer5`
+- Cleared Ultimate's legacy `StepsTypesToHide` list so PMOD6 no longer validates unsupported SM5 stepstypes.
+- Added a local `Graphics/GenericPreview.mpg` asset for PMOD6's generic preview lookup.
+
+Solved:
+
+- Fixed startup/runtime missing string errors for `PModNet`.
+- Fixed invalid stepstype errors for hidden SM5-only stepstypes.
+- Fixed missing `Graphics/GenericPreview`.
+- Fixed missing PMOD6 noteskin metrics.
+
+## 0.0.13 - Guard Options Menu Player Summaries
+
+Implemented:
+
+- Passed the active/master player into Ultimate's theme options menu summary refresh.
+- Added internal player resolution and nil-player guards to PMOD option summary reads.
+
+Solved:
+
+- Fixed `Expected PlayerNumber; got nil` when opening or refreshing the options menu in select music.
+
+## 0.0.14 - Remove Coin Mode Branching
+
+Implemented:
+
+- Removed coin-mode checks from Ultimate's branch helpers.
+- Made title/init/operator routing return static Ultimate screens instead of coin-mode-dependent screens.
+- Removed Ultimate's local `CoinModeChangeScreen` override.
+- Removed the pay-mode pause guard from gameplay.
+
+Addressed:
+
+- Keeps Ultimate's screen flow independent from PMOD6 coin mode state.
+
+## 0.0.15 - Add PMOD Noteskin Alpha Helper
+
+Implemented:
+
+- Added a local guarded `GetCurNSAlpha(player)` compatibility helper for PMOD6 pump noteskins.
+
+Solved:
+
+- Fixed PMOD6 noteskin receptor crashes when noteskins call `GetCurNSAlpha` under Ultimate's `_fallback`-based runtime.
